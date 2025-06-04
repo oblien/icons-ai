@@ -1,0 +1,15 @@
+{
+  "name": "icons-ai",
+  "version": "1.0.6",
+  "description": "dynamic icons by ai",
+  "main": "index.jsx",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "icons",
+    "ai"
+  ],
+  "author": "",
+  "license": "MIT"
+}
