@@ -1,84 +1,35 @@
-// icon-agent.js
-import React, { useEffect, useState } from 'react';
+'use client'
+import React, { useEffect, useState, memo } from 'react';
 
-const ICON_STORAGE_KEY = '__icon_agent_cache__';
-let iconMap = null;
-let subscribers = [];
-const iconRegistry = new Map();
-let isFetching = false;
+import iconsMap from '../../../icons.config.js';
 
-// Notify all components to rerender
-function notify() {
-    subscribers.forEach((fn) => fn({}));
-}
+export const Icon = ({ name, size = 24, className = '', color = '#000', style = {}, isRaw = false }) => {
+    const [icon, setIcon] = useState(null)
 
-// Call this once at app start
-export const initIcons = async (token) => {
-    try {
-        if (iconMap || isFetching) return;
-        isFetching = true;
-
-        try {
-            iconMap = JSON.parse(localStorage.getItem(ICON_STORAGE_KEY) || '{}');
-        } catch {
-            iconMap = {};
-        }
-
-        const missing = [];
-        iconRegistry.forEach((desc, name) => {
-            if (!iconMap[name]) missing.push({ name, description: desc });
-        });
-
-
-        if (missing.length > 0) {
-            const res = await fetch('https://api.oblien.com/ai/icons', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    token,
-                    icons: missing
-                }),
-            });
-            const fetched = await res.json();
-
-            iconMap = { ...iconMap, ...fetched };
-            localStorage.setItem(ICON_STORAGE_KEY, JSON.stringify(iconMap));
-        }
-
-        notify();
-        isFetching = false;
-    } catch (error) {
-        console.error(error);
+    if (!iconsMap) {
+        return null
     }
-};
 
-setTimeout(() => {
-    initIcons();
-}, 1000);
-
-export const Icon = ({ name, description = '', size = 24, color = '#000', style = {}, isRaw = false }) => {
-    const [, forceUpdate] = useState({});
-
-    // Register icon on first render
     useEffect(() => {
-        iconRegistry.set(name, description);
+        setIcon(iconsMap?.[name])
+    }, [iconsMap, name])
 
-        if (!iconMap) {
-            // Subscribe to changes (after fetch)
-            subscribers.push(forceUpdate);
-            return () => {
-                subscribers = subscribers.filter((fn) => fn !== forceUpdate);
-            };
-        }
-    }, [name, description]);
+    if (!icon) return null;
 
-    const url = iconMap?.[name];
-    if (!url) return null;
+    const { Component } = icon
 
-    const finalUrl = url.replace(/ /g, '%20');
+    if (Component) {
+        return <Component {...{ name, className, size, color, style, isRaw }} />;
+    }
+
+    const isValidIcon = typeof icon === 'string' || (typeof icon === 'object' && icon?.url)
+
+    if (!isValidIcon) return null
+
+    const finalUrl = typeof icon === 'string' ? icon : icon.url.replace(/ /g, '%20');
 
     if (isRaw) {
-        return <img src={finalUrl} alt={name} style={{
+        return <img src={finalUrl} alt={name} className={className} style={{
             width: size,
             height: size,
             objectFit: 'contain',
@@ -86,7 +37,7 @@ export const Icon = ({ name, description = '', size = 24, color = '#000', style 
         }} />;
     }
 
-    return <div style={{
+    return <div className={className} style={{
         maskImage: `url(${finalUrl})`,
         WebkitMaskImage: `url(${finalUrl})`,
         maskSize: 'contain',
@@ -102,4 +53,4 @@ export const Icon = ({ name, description = '', size = 24, color = '#000', style 
     }} />;
 };
 
-export default Icon;
+export default memo(Icon);
