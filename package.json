@@ -1,11 +1,11 @@
 {
-  "name": "icons-ai",
-  "version": "1.1.8",
-  "description": "dynamic icons by ai",
+  "name": "resources-ai",
+  "version": "1.2.3",
+  "description": "dynamic resources by ai",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/oblien/icons-ai.git"
+    "url": "https://github.com/oblien/resources-ai.git"
   },
   "main": "dist/index.js",
   "scripts": {

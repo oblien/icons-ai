@@ -1,7 +1,18 @@
 'use client';
 
 import React, { useEffect, useState, memo } from 'react';
-import iconsMap from '../../../icons.config.js';
+let iconsMap = { current: {} };
+let resources = { current: {} };
+
+(async () => {
+    try {
+        iconsMap.current = await import('../../../icons.json');
+        resources.current = await import('../../../resources.json')
+    } catch (error) {
+        console.error('Error loading icons.json or resources.json:', error);
+    }
+})()
+export { resources };
 export const Icon = ({
   name,
   size = 24,
@@ -11,12 +22,9 @@ export const Icon = ({
   isRaw = false
 }) => {
   const [icon, setIcon] = useState(null);
-  if (!iconsMap) {
-    return null;
-  }
   useEffect(() => {
-    setIcon(iconsMap?.[name]);
-  }, [iconsMap, name]);
+    setIcon(iconsMap.current?.[name]);
+  }, [iconsMap.current, name, iconsMap]);
   if (!icon) return null;
   const {
     Component
